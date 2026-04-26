@@ -28,55 +28,41 @@ const client = new Client({
 
                                   criarConta(msg.author.id);
 
-                                    // 💰 VER SALDO
-                                      if (cmd === "!saldo") {
-                                          let user = banco[msg.author.id];
-                                              msg.reply(`💰 ${user.galeoes}G ${user.sicles}S ${user.nuques}N`);
-                                                }
+                                    if (cmd === "!saldo") {
+                                        let u = banco[msg.author.id];
+                                            msg.reply(`💰 ${u.galeoes}G ${u.sicles}S ${u.nuques}N`);
+                                              }
 
-                                                  // ➕ ADICIONAR DINHEIRO
-                                                    if (cmd === "!add") {
-                                                        let tipo = args[1];
-                                                            let valor = parseInt(args[2]);
+                                                if (cmd === "!add") {
+                                                    let tipo = args[1];
+                                                        let valor = parseInt(args[2]);
 
-                                                                if (!["g", "s", "n"].includes(tipo)) {
-                                                                      return msg.reply("Use: !add g/s/n valor");
-                                                                          }
+                                                            if (!["g", "s", "n"].includes(tipo)) {
+                                                                  return msg.reply("Use: !add g/s/n valor");
+                                                                      }
 
-                                                                              if (isNaN(valor)) return msg.reply("Valor inválido");
+                                                                          if (isNaN(valor)) return msg.reply("Valor inválido");
 
-                                                                                  if (tipo === "g") banco[msg.author.id].galeoes += valor;
-                                                                                      if (tipo === "s") banco[msg.author.id].sicles += valor;
-                                                                                          if (tipo === "n") banco[msg.author.id].nuques += valor;
+                                                                              if (tipo === "g") banco[msg.author.id].galeoes += valor;
+                                                                                  if (tipo === "s") banco[msg.author.id].sicles += valor;
+                                                                                      if (tipo === "n") banco[msg.author.id].nuques += valor;
 
-                                                                                              msg.reply("💰 Dinheiro adicionado!");
-                                                                                                }
+                                                                                          msg.reply("💰 Adicionado!");
+                                                                                            }
 
-                                                                                                  // 🛒 COMPRAR
-                                                                                                    if (cmd === "!comprar") {
-                                                                                                        let tipo = args[1];
-                                                                                                            let valor = parseInt(args[2]);
+                                                                                              if (cmd === "!comprar") {
+                                                                                                  let tipo = args[1];
+                                                                                                      let valor = parseInt(args[2]);
 
-                                                                                                                let user = banco[msg.author.id];
+                                                                                                          let u = banco[msg.author.id];
 
-                                                                                                                    if (!["g", "s", "n"].includes(tipo)) {
-                                                                                                                          return msg.reply("Use: !comprar g/s/n valor");
-                                                                                                                              }
+                                                                                                              if (tipo === "g" && u.galeoes >= valor) u.galeoes -= valor;
+                                                                                                                  else if (tipo === "s" && u.sicles >= valor) u.sicles -= valor;
+                                                                                                                      else if (tipo === "n" && u.nuques >= valor) u.nuques -= valor;
+                                                                                                                          else return msg.reply("❌ Sem dinheiro!");
 
-                                                                                                                                  if (isNaN(valor)) return msg.reply("Valor inválido");
+                                                                                                                              msg.reply("🛒 Compra feita!");
+                                                                                                                                }
+                                                                                                                                });
 
-                                                                                                                                      if (tipo === "g" && user.galeoes >= valor) {
-                                                                                                                                            user.galeoes -= valor;
-                                                                                                                                                } else if (tipo === "s" && user.sicles >= valor) {
-                                                                                                                                                      user.sicles -= valor;
-                                                                                                                                                          } else if (tipo === "n" && user.nuques >= valor) {
-                                                                                                                                                                user.nuques -= valor;
-                                                                                                                                                                    } else {
-                                                                                                                                                                          return msg.reply("❌ Dinheiro insuficiente!");
-                                                                                                                                                                              }
-
-                                                                                                                                                                                  msg.reply("🛒 Compra realizada!");
-                                                                                                                                                                                    }
-                                                                                                                                                                                    });
-
-                                                                                                                                                                                    client.login(process.env.TOKEN);
+                                                                                                                                client.login(process.env.TOKEN);
