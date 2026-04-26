@@ -8,90 +8,75 @@ const client = new Client({
                 ]
                 });
 
-                // 💰 banco simples (24h online - memória)
                 const banco = {};
 
-                // ===============================
-                // 🧠 CONVERSÃO BASE (493 knuts = 1 galeão)
-                // ===============================
-                function paraKnuts(valor, moeda) {
-                  if (moeda === "g") return valor * 493;
-                    if (moeda === "s") return valor * 29;
-                      if (moeda === "n") return valor;
-                        return 0;
+                function criarConta(id) {
+                  if (!banco[id]) {
+                      banco[id] = { galeoes: 0, sicles: 0, nuques: 0 };
+                        }
                         }
 
-                        function formatar(knuts) {
-                          let galeoes = Math.floor(knuts / 493);
-                            let resto = knuts % 493;
-                              let sicles = Math.floor(resto / 29);
-                                let n = resto % 29;
+                        client.on("ready", () => {
+                          console.log("Bot online!");
+                          });
 
-                                  return `${galeoes}G ${sicles}S ${n}N`;
-                                  }
+                          client.on("messageCreate", (msg) => {
+                            if (msg.author.bot) return;
 
-                                  // ===============================
-                                  // 🧾 CRIAR CONTA
-                                  // ===============================
-                                  function criarConta(id) {
-                                    if (!banco[id]) {
-                                        banco[id] = {
-                                              knuts: 0
-                                                  };
-                                                    }
-                                                    }
+                              const args = msg.content.split(" ");
+                                const cmd = args[0];
 
-                                                    // ===============================
-                                                    // 🤖 BOT ONLINE
-                                                    // ===============================
-                                                    client.on("ready", () => {
-                                                      console.log("Bot online!");
-                                                      });
+                                  criarConta(msg.author.id);
 
-                                                      // ===============================
-                                                      // 💬 COMANDOS
-                                                      // ===============================
-                                                      client.on("messageCreate", (msg) => {
-                                                        if (msg.author.bot) return;
+                                    // 💰 VER SALDO
+                                      if (cmd === "!saldo") {
+                                          let user = banco[msg.author.id];
+                                              msg.reply(`💰 ${user.galeoes}G ${user.sicles}S ${user.nuques}N`);
+                                                }
 
-                                                          const args = msg.content.split(" ");
-                                                            const cmd = args[0];
+                                                  // ➕ ADICIONAR DINHEIRO
+                                                    if (cmd === "!add") {
+                                                        let tipo = args[1];
+                                                            let valor = parseInt(args[2]);
 
-                                                              criarConta(msg.author.id);
+                                                                if (!["g", "s", "n"].includes(tipo)) {
+                                                                      return msg.reply("Use: !add g/s/n valor");
+                                                                          }
 
-                                                                // 💰 saldo
-                                                                  if (cmd === "!saldo") {
-                                                                      msg.reply(`💰 ${formatar(banco[msg.author.id].knuts)}`);
-                                                                        }
+                                                                              if (isNaN(valor)) return msg.reply("Valor inválido");
 
-                                                                          // ➕ adicionar dinheiro
-                                                                            // uso: !add 5 g | !add 10 s | !add 100 n
-                                                                              if (cmd === "!add") {
-                                                                                  let valor = parseInt(args[1]);
-                                                                                      let moeda = args[2];
+                                                                                  if (tipo === "g") banco[msg.author.id].galeoes += valor;
+                                                                                      if (tipo === "s") banco[msg.author.id].sicles += valor;
+                                                                                          if (tipo === "n") banco[msg.author.id].nuques += valor;
 
-                                                                                          if (!valor || !moeda) return msg.reply("❌ Use: !add quantidade g/s/n");
+                                                                                              msg.reply("💰 Dinheiro adicionado!");
+                                                                                                }
 
-                                                                                              banco[msg.author.id].knuts += paraKnuts(valor, moeda);
+                                                                                                  // 🛒 COMPRAR
+                                                                                                    if (cmd === "!comprar") {
+                                                                                                        let tipo = args[1];
+                                                                                                            let valor = parseInt(args[2]);
 
-                                                                                                  msg.reply("💰 Dinheiro adicionado!");
-                                                                                                    }
+                                                                                                                let user = banco[msg.author.id];
 
-                                                                                                      // 🛒 comprar
-                                                                                                        // uso: !comprar 200
-                                                                                                          if (cmd === "!comprar") {
-                                                                                                              let preco = parseInt(args[1]);
+                                                                                                                    if (!["g", "s", "n"].includes(tipo)) {
+                                                                                                                          return msg.reply("Use: !comprar g/s/n valor");
+                                                                                                                              }
 
-                                                                                                                  if (!preco) return msg.reply("❌ Use: !comprar valor em knuts");
+                                                                                                                                  if (isNaN(valor)) return msg.reply("Valor inválido");
 
-                                                                                                                      if (banco[msg.author.id].knuts >= preco) {
-                                                                                                                            banco[msg.author.id].knuts -= preco;
-                                                                                                                                  msg.reply("🛒 Compra realizada!");
-                                                                                                                                      } else {
-                                                                                                                                            msg.reply("❌ Dinheiro insuficiente!");
-                                                                                                                                                }
-                                                                                                                                                  }
-                                                                                                                                                  });
+                                                                                                                                      if (tipo === "g" && user.galeoes >= valor) {
+                                                                                                                                            user.galeoes -= valor;
+                                                                                                                                                } else if (tipo === "s" && user.sicles >= valor) {
+                                                                                                                                                      user.sicles -= valor;
+                                                                                                                                                          } else if (tipo === "n" && user.nuques >= valor) {
+                                                                                                                                                                user.nuques -= valor;
+                                                                                                                                                                    } else {
+                                                                                                                                                                          return msg.reply("❌ Dinheiro insuficiente!");
+                                                                                                                                                                              }
 
-                                                                                                                                                  // ===============================
-                                                                                                                                                  client.login(process.env.TOKEN);
+                                                                                                                                                                                  msg.reply("🛒 Compra realizada!");
+                                                                                                                                                                                    }
+                                                                                                                                                                                    });
+
+                                                                                                                                                                                    client.login(process.env.TOKEN);
